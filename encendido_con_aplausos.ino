@@ -102,11 +102,11 @@ void control_encendido_apagado(){
 
   // Si la señal esta en HIGH significa que hubo un aplauso
   if (signal_sensor == HIGH) {
+    // Tono de encendido
+    if (rele_estado == 0){tono_encendido();}
+
     // Se le manda una señal al relé para que se encienda
     digitalWrite(rele_control, LOW);
-
-    // Tono de encendido
-    tono_encendido();
 
     // Como hubo una señal, se cambia el valor de sonido para cambiar el estado
     // del relé
@@ -119,13 +119,14 @@ void control_encendido_apagado(){
 
   // Como rele_estado esta verdadero, significa que hubo un aplauso
   if (rele_estado == 2) {
+    // Tono de apagado
+    tono_apagado();
+
     // Se le manda una señal al relé para que se apague
     digitalWrite(rele_control, HIGH);
+
     // Luego se cambia el valor al inicial de 0 aplausos
     rele_estado = 0;
-
-    // Tono de apagado
-    tono_encendido();
   }
 }
 
@@ -143,16 +144,19 @@ void activador_BT(){
     Serial.println(comando);
 
     if (strcmp(comando, "O") == 0) {       // Muestra la lista de canciones
+      // Se le manda una señal al relé para que se enciende
+      if(digitalRead(rele_control) == HIGH){tono_encendido();}
       digitalWrite(rele_control, LOW);
-      tono_encendido();
+      rele_estado = 1;
     }
     else if (strcmp(comando, "F") == 0) { 
       // Se le manda una señal al relé para que se apague
+      if(digitalRead(rele_control) == LOW){tono_apagado();}
       digitalWrite(rele_control, HIGH);
-      tono_apagado();
+      rele_estado = 0;
     }
     else if (strcmp(comando, "S") == 0) { 
-      // Se le manda una señal al relé para que se apague
+      // Se le manda señal para que suene una canción
       sonido_escalado();
     }
   }
@@ -242,6 +246,9 @@ void sonido_escalado(){
 */
 
 void loop() {
-  // control_encendido_apagado();
+  // Función de control mediante aplausos
+  control_encendido_apagado();
+
+  // Función de control mediante comandos Bluetooth
   activador_BT();
 }
